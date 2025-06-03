@@ -1,0 +1,5 @@
+# Ignore all .exe files
+*.exe
+
+# Ignore the specific file
+000001_Jai_Shree_Ram.cpp
