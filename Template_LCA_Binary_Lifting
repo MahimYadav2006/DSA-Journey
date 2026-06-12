@@ -1,0 +1,67 @@
+class Solution {
+public:
+    vector<vector<int>> up;
+    vector<int> depth;
+    vector<vector<int>> adj;
+    #define MOD 1000000007
+
+    long long fastExpo(long long n, int exp){
+        long long res = 1;
+        while(exp){
+            if(exp & 1) res = (res * n) % MOD;
+            n = (n * n) % MOD;
+            exp >>= 1;
+        }
+        return res;
+    }
+    void dfs(int u, int p){
+        up[u][0] = p;
+        for(int j=1; j<=20; j++){
+            up[u][j] = up[up[u][j-1]][j-1];
+        }
+        for(int v: adj[u]){
+            if(v == p) continue;
+            depth[v] = 1 + depth[u];
+            dfs(v, u);
+        }
+    }
+    int findLCA(int u, int v){
+        // Take to the same level
+        if(depth[v] > depth[u]) swap(u, v);
+        int diff = depth[u] - depth[v];
+        for(int i=0; i<=20; i++){
+            if(diff & (1 << i)) u = up[u][i];
+        }
+        if(u == v) return u;
+        for(int i=20; i>=0; i--){
+            if(up[u][i] != up[v][i]){
+                u = up[u][i];
+                v = up[v][i];
+            }
+        }
+        return up[u][0];
+    }
+    vector<int> assignEdgeWeights(vector<vector<int>>& edges, vector<vector<int>>& queries) {
+        int n = edges.size() + 2;
+        adj.resize(n);
+        for(const auto &edge: edges){
+            int u = edge[0];
+            int v = edge[1];
+            adj[u].push_back(v);
+            adj[v].push_back(u);
+        }
+        up.resize(n, vector<int>(21, 1));
+        depth.resize(n, 0);
+        dfs(1, 1);
+        vector<int> ans;
+        for(const auto &query: queries){
+            int u = query[0];
+            int v = query[1];
+            int lca = findLCA(u, v);
+            int len = depth[u] + depth[v] - 2 * depth[lca];
+            if(len == 0) ans.push_back(0);
+            else ans.push_back((int)fastExpo(2, len-1));
+        }
+        return ans;
+    }
+};
